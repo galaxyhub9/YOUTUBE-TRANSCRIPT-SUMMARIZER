@@ -4,12 +4,15 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from transformers import BartForConditionalGeneration, BartTokenizer
 from summarizer import Summarizer
 import spacy
-import pytextrank
+import pytextrank 
+from flask_cors import CORS  
+
 
 nlp = spacy.load("en_core_web_lg") #INSTALL IT USING COMMAND pythom -m spacy download en_core_web_lg
 nlp.add_pipe("textrank")
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route('/')
 def hello_world():
@@ -18,7 +21,7 @@ def hello_world():
 
         
 
-@app.route('/get_transcript', methods=['GET'])
+@app.route('/summarize_transcript', methods=['GET'])
 def get_transcript():
     video_id = request.args.get('video_id')
     should_summarize = request.args.get('summarize')
@@ -41,12 +44,15 @@ def get_transcript():
     
 def summarize_text(text):
     print("called summary fun")    
-    summary= ''''''
+    summary1= []
     doc = nlp(text)
     for sent in doc._.textrank.summary(limit_phrases=2, limit_sentences=5):
-        summary = summary + str(sent)
+        print(sent)
+        summary1.append(str(sent))
+    # print(summary1)
+    # summary = " ".join(summary1)
     print("done with summ fun")
-    return summary
+    return summary1
 
 # model_name = "t5-base"
 # model = T5ForConditionalGeneration.from_pretrained(model_name)
