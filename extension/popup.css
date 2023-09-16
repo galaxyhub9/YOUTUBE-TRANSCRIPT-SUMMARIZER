@@ -33,10 +33,11 @@ body {
   transform: scale(1.05); /* Slightly scale up when hovered */
 }
 
-.summary {
+#summary {
   margin-top: 20px;
   font-size: 14px;
   text-align: justify;
+
 }
 
 /* You can add more styles as needed */

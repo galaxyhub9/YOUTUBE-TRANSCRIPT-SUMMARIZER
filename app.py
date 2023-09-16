@@ -4,56 +4,49 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from transformers import BartForConditionalGeneration, BartTokenizer
 from summarizer import Summarizer
 import spacy
-import pytextrank 
+import pytextrank
 from flask_cors import CORS  
 
 
-nlp = spacy.load("en_core_web_lg") #INSTALL IT USING COMMAND pythom -m spacy download en_core_web_lg
+nlp = spacy.load("en_core_web_lg")
+# INSTALL IT USING COMMAND pythom -m spacy download en_core_web_lg
 nlp.add_pipe("textrank")
 
 app = Flask(__name__)
 CORS(app)
+
 
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
 
 
-        
-
 @app.route('/summarize_transcript', methods=['GET'])
 def get_transcript():
     video_id = request.args.get('video_id')
     should_summarize = request.args.get('summarize')
+    sentence_limit = int(request.args.get('sentence_limit'))  # Default to 5 sentences if not specified
 
     try:
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
         full_transcript = ' '.join([entry['text'] for entry in transcript])
-        # print("full_trascript____________-----", full_transcript)
 
         if should_summarize == 'true':
-            summarized_transcript = summarize_text(full_transcript)
-            print("i am here")
-            # print("SUMMARIZED_SCRIPT=\n",summarized_transcript)
+            summarized_transcript = summarize_text(full_transcript, sentence_limit)
             return jsonify({'summarized_transcript': summarized_transcript})
         else:
             return jsonify({'full_transcript': full_transcript})
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Transcript not available or invalid video ID.'}), 400
-    
-    
-def summarize_text(text):
-    print("called summary fun")    
-    summary1= []
-    doc = nlp(text)
-    for sent in doc._.textrank.summary(limit_phrases=2, limit_sentences=5):
-        print(sent)
-        summary1.append(str(sent))
-    # print(summary1)
-    # summary = " ".join(summary1)
-    print("done with summ fun")
-    return summary1
 
+    
+    
+def summarize_text(text, sentence_limit):
+    summary = []
+    doc = nlp(text)
+    for sent in doc._.textrank.summary(limit_phrases=1, limit_sentences=sentence_limit):
+        summary.append(str(sent))
+    return summary
 # model_name = "t5-base"
 # model = T5ForConditionalGeneration.from_pretrained(model_name)
 # tokenizer = T5Tokenizer.from_pretrained(model_name)
@@ -88,4 +81,3 @@ def summarize_text(text):
 
 if __name__ == '__main__':
     app.run(debug=True)
-    
